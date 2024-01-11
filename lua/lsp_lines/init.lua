@@ -13,6 +13,14 @@ local DIAGNOSTIC = "diagnostic"
 local OVERLAP = "overlap"
 local BLANK = "blank"
 
+local function current_line_diagnostics()
+  local bufnr = 0
+  local line_nr = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local opts = { ["lnum"] = line_nr }
+
+  return vim.diagnostic.get(bufnr, opts)
+end
+
 -- Deprecated. Use `setup()` instead.
 M.register_lsp_virtual_lines = function()
   print("lsp_lines.register_lsp_virtual_lines() is deprecated. use lsp_lines.setup() instead.")
@@ -33,17 +41,27 @@ local function column_to_cell(bufnr, lnum, col)
   return col
 end
 
+---@param diagnostics table
+local function filter_diagnostics(diagnostics, opts)
+  local results = {}
+  for _, diagnostic in ipairs(diagnostics) do
+    if diagnostic.severity <= (opts.severity or vim.diagnostic.severity.INFO) then
+      table.insert(results, diagnostic)
+    end
+  end
+  return results
+end
+
 -- Registers a wrapper-handler to render lsp lines.
 -- This should usually only be called once, during initialisation.
-M.setup = function()
+M.setup = function(opts)
   -- TODO: On LSP restart (e.g.: diagnostics cleared), errors don't go away.
-
   vim.diagnostic.handlers.virtual_lines = {
     ---@param namespace number
     ---@param bufnr number
     ---@param diagnostics table
     ---@param opts boolean
-    show = function(namespace, bufnr, diagnostics, opts)
+    show = function(namespace, bufnr, diagnostics)
       vim.validate({
         namespace = { namespace, "n" },
         bufnr = { bufnr, "n" },
@@ -54,6 +72,8 @@ M.setup = function()
         },
         opts = { opts, "t", true },
       })
+
+      diagnostics = filter_diagnostics(diagnostics, opts)
 
       table.sort(diagnostics, function(a, b)
         if a.lnum ~= b.lnum then
@@ -200,6 +220,30 @@ M.setup = function()
       end
     end,
   }
+
+  if not opts.current_line_only then
+    return
+  end
+
+  vim.diagnostic.config({ virtual_lines = false })
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+      vim.api.nvim_create_augroup("lsp_diagnostic_current_line", { clear = true })
+      vim.api.nvim_create_autocmd("CursorHold", {
+        group = "lsp_diagnostic_current_line",
+        callback = function()
+          vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, args.buf, current_line_diagnostics())
+        end,
+      })
+
+      vim.api.nvim_create_autocmd("CursorMoved", {
+        group = "lsp_diagnostic_current_line",
+        callback = function()
+          vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, args.buf)
+        end,
+      })
+    end,
+  })
 end
 
 ---@return boolean

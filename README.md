@@ -25,15 +25,17 @@ per line, but again, there's no handy way to read the whole thing.
 
 ## With packer.nvim
 
-Using packer.nvim (this should probably be registered _after_ `lspconfig`):
+Using lazy.nvim
 
 ```lua
-use({
-  "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-  config = function()
-    require("lsp_lines").setup()
-  end,
-})
+{
+    "steven-liou/lsp_lines.nvim",
+    event = "LSPAttach",
+    opts = {
+        severity = vim.diagnostic.severity.WARN, // only severity at or above this level will show
+        current_line_only = true, // only show virtual lines on cursor line only
+    },
+}
 ```
 
 ## With git
