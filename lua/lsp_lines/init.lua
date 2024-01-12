@@ -13,6 +13,23 @@ local DIAGNOSTIC = "diagnostic"
 local OVERLAP = "overlap"
 local BLANK = "blank"
 
+function tprint(tbl, indent)
+  if not indent then
+    indent = 0
+  end
+  for k, v in pairs(tbl) do
+    formatting = string.rep("  ", indent) .. k .. ": "
+    if type(v) == "table" then
+      print(formatting)
+      tprint(v, indent + 1)
+    elseif type(v) == "boolean" then
+      print(formatting .. tostring(v))
+    else
+      print(formatting .. v)
+    end
+  end
+end
+
 local function current_line_diagnostics()
   local bufnr = 0
   local line_nr = vim.api.nvim_win_get_cursor(0)[1] - 1
@@ -41,8 +58,25 @@ local function column_to_cell(bufnr, lnum, col)
   return col
 end
 
+local function most_severe_level_only(diagnostics, opts)
+  local results = {}
+  local lowest_severity = opts.severity or vim.diagnostic.severity.INFO
+  for _, diagnostic in ipairs(diagnostics) do
+    if diagnostic.severity <= lowest_severity then
+      lowest_severity = diagnostic.severity
+      results[diagnostic.severity] = results[diagnostic.severity] or {}
+      table.insert(results[diagnostic.severity], diagnostic)
+    end
+  end
+  return results[lowest_severity] or {}
+end
+
 ---@param diagnostics table
 local function filter_diagnostics(diagnostics, opts)
+  if opts.most_severe_level_only then
+    return most_severe_level_only(diagnostics, opts)
+  end
+
   local results = {}
   for _, diagnostic in ipairs(diagnostics) do
     if diagnostic.severity <= (opts.severity or vim.diagnostic.severity.INFO) then

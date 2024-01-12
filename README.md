@@ -36,6 +36,7 @@ Using lazy.nvim
         current_line_only = true, -- only show virtual lines on cursor line only
         show_virt_line_events = { "CursorHold" }, -- events to show virtual lines
         hide_virt_line_events = {"CursorMoved", "InsertEnter"}, -- events o hide virtual lines
+        most_severe_level_only = false,  -- only show the most severe level at current line. If minimum severity level set above is WARN, then if a line has both two ERROR and one WARN, only the two ERROR will show
     },
 }
 ```
