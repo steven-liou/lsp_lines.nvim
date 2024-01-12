@@ -30,7 +30,7 @@ Using lazy.nvim
 ```lua
 {
     "steven-liou/lsp_lines.nvim",
-    event = "LSPAttach",
+    event = "LspAttach",
     opts = {
         severity = vim.diagnostic.severity.WARN, -- only severity at or above this level will show
         current_line_only = true, -- only show virtual lines on cursor line only
