@@ -226,22 +226,31 @@ M.setup = function(opts)
   end
 
   vim.diagnostic.config({ virtual_lines = false })
+
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
       vim.api.nvim_create_augroup("lsp_diagnostic_current_line", { clear = true })
-      vim.api.nvim_create_autocmd("CursorHold", {
-        group = "lsp_diagnostic_current_line",
-        callback = function()
-          vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, args.buf, current_line_diagnostics())
-        end,
-      })
 
-      vim.api.nvim_create_autocmd("CursorMoved", {
-        group = "lsp_diagnostic_current_line",
-        callback = function()
-          vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, args.buf)
-        end,
-      })
+      local show_virt_line_events = opts.show_virt_line_events or { "CursorHold" }
+      local hide_virt_line_events = opts.hide_virt_line_events or { "CursorMoved", "InsertEnter" }
+
+      for _, event in ipairs(show_virt_line_events) do
+        vim.api.nvim_create_autocmd(event, {
+          group = "lsp_diagnostic_current_line",
+          callback = function()
+            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, args.buf, current_line_diagnostics())
+          end,
+        })
+      end
+
+      for _, event in ipairs(hide_virt_line_events) do
+        vim.api.nvim_create_autocmd(event, {
+          group = "lsp_diagnostic_current_line",
+          callback = function()
+            vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, args.buf)
+          end,
+        })
+      end
     end,
   })
 end
