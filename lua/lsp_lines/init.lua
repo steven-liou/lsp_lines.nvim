@@ -272,7 +272,7 @@ M.setup = function(opts)
         vim.api.nvim_create_autocmd(event, {
           group = "lsp_diagnostic_current_line",
           callback = function()
-            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, args.buf, current_line_diagnostics())
+            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, 0, current_line_diagnostics())
           end,
         })
       end
@@ -281,7 +281,7 @@ M.setup = function(opts)
         vim.api.nvim_create_autocmd(event, {
           group = "lsp_diagnostic_current_line",
           callback = function()
-            vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, args.buf)
+            vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
           end,
         })
       end
