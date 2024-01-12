@@ -23,7 +23,7 @@ per line, but again, there's no handy way to read the whole thing.
 
 # Installation
 
-## With packer.nvim
+## With Lazy.nvim
 
 Using lazy.nvim
 
