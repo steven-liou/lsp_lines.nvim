@@ -58,7 +58,10 @@ local function column_to_cell(bufnr, lnum, col)
   return col
 end
 
-local function most_severe_level_only(diagnostics, opts)
+-- returns only the diagnostics at the most severe diagnostic level, above the specified severity level
+---@param diagnostics table
+---@param opts table
+M.most_severe_level_only = function(diagnostics, opts)
   local results = {}
   local lowest_severity = opts.severity or vim.diagnostic.severity.INFO
   for _, diagnostic in ipairs(diagnostics) do
@@ -71,12 +74,10 @@ local function most_severe_level_only(diagnostics, opts)
   return results[lowest_severity] or {}
 end
 
+-- returns any diagnostic at or above the specified severity level
 ---@param diagnostics table
-local function filter_diagnostics(diagnostics, opts)
-  if opts.most_severe_level_only then
-    return most_severe_level_only(diagnostics, opts)
-  end
-
+---@param opts table
+M.minimum_severity_level = function(diagnostics, opts)
   local results = {}
   for _, diagnostic in ipairs(diagnostics) do
     if diagnostic.severity <= (opts.severity or vim.diagnostic.severity.INFO) then
@@ -107,7 +108,9 @@ M.setup = function(opts)
         opts = { opts, "t", true },
       })
 
-      diagnostics = filter_diagnostics(diagnostics, opts)
+      if opts.diagnostics_filter then
+        diagnostics = opts.diagnostics_filter(diagnostics, opts)
+      end
 
       table.sort(diagnostics, function(a, b)
         if a.lnum ~= b.lnum then
