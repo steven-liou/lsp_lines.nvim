@@ -36,7 +36,7 @@ Using lazy.nvim
         severity = vim.diagnostic.severity.WARN, -- only severity at or above this level will show
         current_line_only = true, -- only show virtual lines on cursor line only
         show_virt_line_events = { "CursorHold" }, -- events to show virtual lines
-        hide_virt_line_events = {"CursorMoved", "InsertEnter"}, -- events o hide virtual lines
+        hide_virt_line_events = {"CursorMoved", "InsertEnter"}, -- events to hide virtual lines
         diagnostics_filter = require("lsp_lines").most_severe_level_only, -- pick available diagnostic filters or write your own for this key, or omit this key to not use any filter
         })
     end,

@@ -13,12 +13,14 @@ local DIAGNOSTIC = "diagnostic"
 local OVERLAP = "overlap"
 local BLANK = "blank"
 
-function tprint(tbl, indent)
+-- Print contents of `tbl`, with indentation.
+-- `indent` sets the initial level of indentation.
+local function tprint(tbl, indent)
   if not indent then
     indent = 0
   end
   for k, v in pairs(tbl) do
-    formatting = string.rep("  ", indent) .. k .. ": "
+    local formatting = string.rep("  ", indent) .. k .. ": "
     if type(v) == "table" then
       print(formatting)
       tprint(v, indent + 1)
@@ -258,31 +260,33 @@ M.setup = function(opts)
     end,
   }
 
-  if not opts.current_line_only then
-    return
-  end
-
   vim.diagnostic.config({ virtual_lines = false })
 
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
-      vim.api.nvim_create_augroup("lsp_diagnostic_current_line", { clear = true })
+      vim.api.nvim_create_augroup("lsp_diagnostic_lines", { clear = true })
 
-      local show_virt_line_events = opts.show_virt_line_events or { "CursorHold" }
-      local hide_virt_line_events = opts.hide_virt_line_events or { "CursorMoved", "InsertEnter" }
+      local show_virt_line_events = opts.show_virt_line_events or {}
+      local hide_virt_line_events = opts.hide_virt_line_events or {}
 
       for _, event in ipairs(show_virt_line_events) do
         vim.api.nvim_create_autocmd(event, {
-          group = "lsp_diagnostic_current_line",
+          group = "lsp_diagnostic_lines",
           callback = function()
-            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, 0, current_line_diagnostics())
+            local diagnostics = nil
+            if opts.current_line_only then
+              diagnostics = current_line_diagnostics()
+            else
+              diagnostics = vim.diagnostic.get(0)
+            end
+            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, 0, diagnostics)
           end,
         })
       end
 
       for _, event in ipairs(hide_virt_line_events) do
         vim.api.nvim_create_autocmd(event, {
-          group = "lsp_diagnostic_current_line",
+          group = "lsp_diagnostic_lines",
           callback = function()
             vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
           end,
