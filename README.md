@@ -48,8 +48,8 @@ Using lazy.nvim
         - One `ERROR` and one `WARN` on line 2
         - One `WARN` and one `HINT` on line 3
 - `diagnostics_filter` function can be:
-    - `minimum_severity_level` show diagnostics at or above the specified minimum severity level. Both `ERROR` and `WARN` will show on line 2, and only `WARN` will show on line 3, since `HINT` doesn't meet minimum severity criteria
-    - `most_severe_level_per_line` only shows the most severe diagnostics in a given line at or above the specified minimum severity level. Only `ERROR` will show on line 2, and `WARN` on line 3.
+    - `minimum_severity_level` show diagnostics at or above the specified minimum severity level. Both `ERROR` and `WARN` will show on line 2, and only `WARN` will show on line 3, since `HINT` doesn't meet minimum severity criteria. Recommended if `current_line_only` is `true`
+    - `most_severe_level_per_line` only shows the most severe diagnostics in a given line at or above the specified minimum severity level. Only `ERROR` will show on line 2, and `WARN` on line 3. Recommended if `current_line_only` is `false`
     - `most_severe_level_of_buffer` only shows the most severe diagnostics in a buffer at or above the specified minimum severity level. Only `ERROR` will show on line 2, since the most severe error in the whole buffer is `ERROR`
     - Any custom function that you write, with first parameter a table of LSP `diagnostics`, and second parameter any table of `options`
 
