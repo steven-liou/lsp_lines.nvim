@@ -37,14 +37,20 @@ Using lazy.nvim
         current_line_only = true, -- only show virtual lines on cursor line only
         show_virt_line_events = { "CursorHold" }, -- events to show virtual lines
         hide_virt_line_events = {"CursorMoved", "InsertEnter"}, -- events to hide virtual lines
-        diagnostics_filter = require("lsp_lines").most_severe_level_only, -- pick available diagnostic filters or write your own for this key, or omit this key to not use any filter
+        diagnostics_filter = require("lsp_lines").most_severe_level_of_buffer, -- pick available diagnostic filters or write your own for this key, or omit this key to not use any filter
         })
     end,
 }
 ```
-- `diagnostics_filter` function can be
-    - `most_severe_level_only` only shows the most severe diagnostics at or above the specified minimum severity level
-    - `minimum_severity_level` show diagnostics at or above the specified minimum severity level
+- Below examples are based on:
+    - Minimum severity level of `INFO`
+    - Given a buffer with:
+        - One `ERROR` and one `WARN` on line 2
+        - One `WARN` and one `HINT` on line 3
+- `diagnostics_filter` function can be:
+    - `minimum_severity_level` show diagnostics at or above the specified minimum severity level. Both `ERROR` and `WARN` will show on line 2, and only `WARN` will show on line 3, since `HINT` doesn't meet minimum severity criteria
+    - `most_severe_level_per_line` only shows the most severe diagnostics in a given line at or above the specified minimum severity level. Only `ERROR` will show on line 2, and `WARN` on line 3.
+    - `most_severe_level_of_buffer` only shows the most severe diagnostics in a buffer at or above the specified minimum severity level. Only `ERROR` will show on line 2, since the most severe error in the whole buffer is `ERROR`
     - Any custom function that you write, with first parameter a table of LSP `diagnostics`, and second parameter any table of `options`
 
 ## With git

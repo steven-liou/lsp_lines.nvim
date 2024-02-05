@@ -60,10 +60,10 @@ local function column_to_cell(bufnr, lnum, col)
   return col
 end
 
--- returns only the diagnostics at the most severe diagnostic level, above the specified severity level
+-- returns only the diagnostics at the most severe diagnostic level in a buffer, above the specified severity level
 ---@param diagnostics table
 ---@param opts table
-M.most_severe_level_only = function(diagnostics, opts)
+M.most_severe_level_of_buffer = function(diagnostics, opts)
   local results = {}
   local lowest_severity = opts.severity or vim.diagnostic.severity.INFO
   for _, diagnostic in ipairs(diagnostics) do
@@ -74,6 +74,37 @@ M.most_severe_level_only = function(diagnostics, opts)
     end
   end
   return results[lowest_severity] or {}
+end
+
+-- returns only the diagnostics at the most severe diagnostic level of each line, above the specified severity level
+---@param diagnostics table
+---@param opts table
+M.most_severe_level_per_line = function(diagnostics, opts)
+  local results = {}
+  local diagnostics_by_lnum = {}
+  for _, diagnostic in ipairs(diagnostics) do
+    lnum = diagnostic.lnum
+    local lnum_diagnostics = diagnostics_by_lnum[lnum] or {}
+    table.insert(lnum_diagnostics, diagnostic)
+    diagnostics_by_lnum[lnum] = lnum_diagnostics
+  end
+
+  for _, line_diagnostics in pairs(diagnostics_by_lnum) do
+    local lowest_severity = opts.severity or vim.diagnostic.severity.INFO
+    local temp = {}
+    for _, diagnostic in ipairs(line_diagnostics) do
+      if diagnostic.severity <= lowest_severity then
+        lowest_severity = diagnostic.severity
+        temp[lowest_severity] = temp[lowest_severity] or {}
+        table.insert(temp[lowest_severity], diagnostic)
+      end
+    end
+    for _, diagnostic in ipairs(temp[lowest_severity] or {}) do
+      table.insert(results, diagnostic)
+    end
+  end
+
+  return results
 end
 
 -- returns any diagnostic at or above the specified severity level
