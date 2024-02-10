@@ -123,7 +123,6 @@ end
 -- Registers a wrapper-handler to render lsp lines.
 -- This should usually only be called once, during initialisation.
 M.setup = function(opts)
-  -- TODO: On LSP restart (e.g.: diagnostics cleared), errors don't go away.
   vim.diagnostic.handlers.virtual_lines = {
     ---@param namespace number
     ---@param bufnr number
@@ -295,6 +294,18 @@ M.setup = function(opts)
 
   vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(args)
+      local show_virt_lines = function()
+        local diagnostics = nil
+        if opts.current_line_only then
+          diagnostics = current_line_diagnostics()
+        else
+          diagnostics = vim.diagnostic.get(0)
+        end
+        vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, 0, diagnostics)
+      end
+
+      show_virt_lines()
+
       vim.api.nvim_create_augroup("lsp_diagnostic_lines", { clear = true })
 
       local show_virt_line_events = opts.show_virt_line_events or {}
@@ -303,15 +314,7 @@ M.setup = function(opts)
       for _, event in ipairs(show_virt_line_events) do
         vim.api.nvim_create_autocmd(event, {
           group = "lsp_diagnostic_lines",
-          callback = function()
-            local diagnostics = nil
-            if opts.current_line_only then
-              diagnostics = current_line_diagnostics()
-            else
-              diagnostics = vim.diagnostic.get(0)
-            end
-            vim.diagnostic.handlers.virtual_lines.show(args.data.client_id, 0, diagnostics)
-          end,
+          callback = show_virt_lines,
         })
       end
 
@@ -320,6 +323,17 @@ M.setup = function(opts)
           group = "lsp_diagnostic_lines",
           callback = function()
             vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
+          end,
+        })
+      end
+
+      for _, event in ipairs({ "LspDetach" }) do
+        vim.api.nvim_create_autocmd(event, {
+          group = "lsp_diagnostic_lines",
+          callback = function()
+            vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
+            vim.api.nvim_del_augroup_by_name("lsp_diagnostic_lines")
+            return true
           end,
         })
       end
