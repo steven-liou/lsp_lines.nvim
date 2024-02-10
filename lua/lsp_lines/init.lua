@@ -327,16 +327,15 @@ M.setup = function(opts)
         })
       end
 
-      for _, event in ipairs({ "LspDetach" }) do -- clear remaining LSP errors when calling LspRestart
-        vim.api.nvim_create_autocmd(event, {
-          group = "lsp_diagnostic_lines",
-          callback = function()
-            vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
-            vim.api.nvim_del_augroup_by_name("lsp_diagnostic_lines")
-            return true
-          end,
-        })
-      end
+      -- clear remaining LSP errors when calling LspRestart
+      vim.api.nvim_create_autocmd("LspDetach", {
+        group = "lsp_diagnostic_lines",
+        callback = function()
+          vim.diagnostic.handlers.virtual_lines.hide(args.data.client_id, 0)
+          vim.api.nvim_del_augroup_by_name("lsp_diagnostic_lines")
+          return true
+        end,
+      })
     end,
   })
 end
