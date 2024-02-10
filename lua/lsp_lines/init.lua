@@ -327,7 +327,7 @@ M.setup = function(opts)
         })
       end
 
-      for _, event in ipairs({ "LspDetach" }) do
+      for _, event in ipairs({ "LspDetach" }) do -- clear remaining LSP errors when calling LspRestart
         vim.api.nvim_create_autocmd(event, {
           group = "lsp_diagnostic_lines",
           callback = function()
