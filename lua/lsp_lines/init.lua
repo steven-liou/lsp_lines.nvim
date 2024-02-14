@@ -286,7 +286,10 @@ M.setup = function(opts)
     ---@param namespace number
     ---@param bufnr number
     hide = function(namespace, bufnr)
-      local ns = vim.diagnostic.get_namespace(namespace)
+      local ok, ns = pcall(vim.diagnostic.get_namespace, namespace)
+      if not ok then
+        return
+      end
       if ns.user_data.virt_lines_ns then
         vim.api.nvim_buf_clear_namespace(bufnr, ns.user_data.virt_lines_ns, 0, -1)
       end
