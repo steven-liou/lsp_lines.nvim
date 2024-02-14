@@ -152,7 +152,10 @@ M.setup = function(opts)
         end
       end)
 
-      local ns = vim.diagnostic.get_namespace(namespace)
+      local ok, ns = pcall(vim.diagnostic.get_namespace, namespace)
+      if not ok then
+        return
+      end
       if not ns.user_data.virt_lines_ns then
         ns.user_data.virt_lines_ns = vim.api.nvim_create_namespace("")
       end
